@@ -157,7 +157,7 @@
     if (droneImg.complete) {
       const row = state === 'dead' ? 1 : 0;
       const sx = FRAME_MARGIN_LEFT + frame * (FRAME_WIDTH + FRAME_GAP_X);
-      const sy = FRAME_MARGIN_TOP + row * (FRAME_HEIGHT + FRAME_GAP_Y);
+      const sy = row * (FRAME_HEIGHT + FRAME_GAP_Y) + (row ? FRAME_MARGIN_TOP : 0);
       ctx.drawImage(droneImg, sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
                    drone.x, drone.y, drone.width, drone.height);
     }
