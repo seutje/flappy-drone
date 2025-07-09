@@ -192,8 +192,15 @@
   let frame = 0;
   let frameTime = 0;
 
+  let startedOnce = false;
+
   function start() {
-    pipes = [];
+    if (startedOnce) {
+      pipes = [];
+      // Repopulate pipes on restart so the first is within 400px of the drone
+      populatePipes();
+    }
+    startedOnce = true;
     drone.y = canvas.height/2;
     drone.vy = 0;
     lastPipeTime = performance.now();
@@ -201,8 +208,6 @@
     state = 'playing';
     frame = 0;
     frameTime = 0;
-    // Populate initial pipes so the first appears within 400px of the drone
-    populatePipes();
     if (musicStartTimeout) clearTimeout(musicStartTimeout);
     musicStartTimeout = setTimeout(startMusic, 1000);
   }
