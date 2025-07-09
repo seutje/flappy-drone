@@ -112,6 +112,45 @@
     noise.stop(time + 0.2);
   }
 
+  function ensureAudio() {
+    if (!audioCtx) {
+      audioCtx = new AudioContext();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+      masterGain.connect(audioCtx.destination);
+    }
+    audioCtx.resume();
+  }
+
+  function playTapSound() {
+    ensureAudio();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(880, now);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    osc.connect(gain).connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.15);
+  }
+
+  function playDeathSound() {
+    ensureAudio();
+    const now = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(300, now);
+    osc.frequency.exponentialRampToValueAtTime(50, now + 0.6);
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    osc.connect(gain).connect(masterGain);
+    osc.start(now);
+    osc.stop(now + 0.6);
+  }
+
   function playMelody() {
     const start = audioCtx.currentTime + 0.05;
     const totalNotes = melodyNotes.length * SETS;
@@ -125,14 +164,8 @@
   }
 
   function startMusic() {
+    ensureAudio();
     if (!audioStarted) {
-      if (!audioCtx) {
-        audioCtx = new AudioContext();
-        masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-        masterGain.connect(audioCtx.destination);
-      }
-      audioCtx.resume();
       playMelody();
       audioStarted = true;
     }
@@ -181,12 +214,14 @@
   }
 
   function reset() {
+    playDeathSound();
     state = 'dead';
     frame = 0;
     frameTime = 0;
   }
 
   function handleInput() {
+    playTapSound();
     if (state !== 'playing') { start(); return; }
     drone.vy = JUMP;
   }
