@@ -35,9 +35,14 @@
 
   const droneImg = new Image();
   droneImg.src = 'assets/images/sprite-drone.png';
-  const SPRITE_SIZE = 1024; // dimensions of the sprite image
-  const PADDING_TOP = 250;  // transparent padding inside the sprite
-  const PADDING_LEFT = 125;
+  const FRAME_WIDTH = 350;
+  const FRAME_HEIGHT = 240;
+  const FRAME_GAP_X = 50;
+  const FRAME_GAP_Y = 30;
+  const FRAME_MARGIN_LEFT = 15;
+  const FRAME_MARGIN_TOP = 28;
+  const FRAMES = 3;
+  const ANIM_SPEED = 120; // ms between frames
 
   const GRAVITY = 0.5;
   const JUMP = -8; // reduced jump power
@@ -49,19 +54,21 @@
   let pipes = [];
   let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 80, height: 64 };
   function getHitbox() {
-    const scaleX = drone.width / SPRITE_SIZE;
-    const scaleY = drone.height / SPRITE_SIZE;
-    const padX = PADDING_LEFT * scaleX;
-    const padY = PADDING_TOP * scaleY;
+    const scaleX = drone.width / FRAME_WIDTH;
+    const scaleY = drone.height / FRAME_HEIGHT;
+    const padX = 10 * scaleX;
+    const padY = 5 * scaleY;
     return {
       x: drone.x + padX,
       y: drone.y + padY,
-      width: drone.width - padX,
-      height: drone.height - padY
+      width: drone.width - padX * 2,
+      height: drone.height - padY * 2
     };
   }
   let score = 0;
-  let running = false;
+  let state = 'intro'; // intro, playing, dead
+  let frame = 0;
+  let frameTime = 0;
 
   function start() {
     pipes = [];
@@ -69,8 +76,9 @@
     drone.vy = 0;
     lastPipeTime = performance.now();
     score = 0;
-    running = true;
-    window.requestAnimationFrame(loop);
+    state = 'playing';
+    frame = 0;
+    frameTime = 0;
   }
 
   function drawGameOver() {
@@ -83,11 +91,13 @@
   }
 
   function reset() {
-    running = false;
+    state = 'dead';
+    frame = 0;
+    frameTime = 0;
   }
 
   canvas.addEventListener('touchstart', () => {
-    if (!running) { start(); return; }
+    if (state !== 'playing') { start(); return; }
     drone.vy = JUMP;
   });
 
@@ -97,32 +107,46 @@
   }
 
   function update(delta) {
-    if (performance.now() - lastPipeTime > PIPE_INTERVAL) {
-      addPipe();
-      lastPipeTime = performance.now();
-    }
-    drone.vy += GRAVITY;
-    drone.y += drone.vy;
+    if (state === 'intro') return;
 
-    const hitbox = getHitbox();
-    if (hitbox.y + hitbox.height > canvas.height || hitbox.y < 0) {
-      reset();
-      return;
-    }
+    if (state === 'playing') {
+      if (performance.now() - lastPipeTime > PIPE_INTERVAL) {
+        addPipe();
+        lastPipeTime = performance.now();
+      }
+      frameTime += delta;
+      if (frameTime > ANIM_SPEED) {
+        frame = (frame + 1) % FRAMES;
+        frameTime = 0;
+      }
+      drone.vy += GRAVITY;
+      drone.y += drone.vy;
 
-    for (let i = pipes.length - 1; i >= 0; i--) {
-      const p = pipes[i];
-      p.x -= delta * 0.2; // pipe speed
-      // collision
-      if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
-        if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
-          reset();
-          return;
+      const hitbox = getHitbox();
+      if (hitbox.y + hitbox.height > canvas.height || hitbox.y < 0) {
+        reset();
+        return;
+      }
+
+      for (let i = pipes.length - 1; i >= 0; i--) {
+        const p = pipes[i];
+        p.x -= delta * 0.2; // pipe speed
+        if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
+          if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
+            reset();
+            return;
+          }
+        }
+        if (p.x + PIPE_WIDTH < 0) {
+          pipes.splice(i, 1);
+          score++;
         }
       }
-      if (p.x + PIPE_WIDTH < 0) {
-        pipes.splice(i, 1);
-        score++;
+    } else if (state === 'dead') {
+      frameTime += delta;
+      if (frameTime > ANIM_SPEED && frame < FRAMES - 1) {
+        frame++;
+        frameTime = 0;
       }
     }
   }
@@ -131,7 +155,13 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     // Draw drone
     if (droneImg.complete) {
-      ctx.drawImage(droneImg, drone.x, drone.y, drone.width, drone.height);
+      const row = state === 'dead' ? 1 : 0;
+      const sx = (row > 0 ? FRAME_MARGIN_LEFT : 0) +
+                 frame * (FRAME_WIDTH + FRAME_GAP_X);
+      const sy = row * (FRAME_HEIGHT + FRAME_GAP_Y) +
+                 (row === 1 ? FRAME_MARGIN_TOP : 0);
+      ctx.drawImage(droneImg, sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
+                   drone.x, drone.y, drone.width, drone.height);
     }
     // Draw pipes
     ctx.fillStyle = '#3a5f0b';
@@ -152,9 +182,8 @@
     last = now;
     update(delta);
     draw();
-    if (!running) {
+    if (state === 'dead') {
       drawGameOver();
-      return;
     }
     window.requestAnimationFrame(loop);
   }
@@ -164,6 +193,7 @@
   ctx.font = 'bold 24px sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('Tap to Start', canvas.width/2, canvas.height/2);
+  window.requestAnimationFrame(loop);
 })();
 </script>
 </body>
