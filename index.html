@@ -37,14 +37,14 @@
   droneImg.src = 'assets/images/sprite-drone.png';
 
   const GRAVITY = 0.5;
-  const JUMP = -8;
+  const JUMP = -16; // double jump height
   const GAP = 140; // vertical gap between obstacles
   const PIPE_WIDTH = 60;
   const PIPE_INTERVAL = 1600; // ms
 
   let lastPipeTime = 0;
   let pipes = [];
-  let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 40, height: 32 };
+  let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 80, height: 64 };
   let score = 0;
   let running = false;
 
