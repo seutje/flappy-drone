@@ -156,8 +156,10 @@
     // Draw drone
     if (droneImg.complete) {
       const row = state === 'dead' ? 1 : 0;
-      const sx = FRAME_MARGIN_LEFT + frame * (FRAME_WIDTH + FRAME_GAP_X);
-      const sy = row * (FRAME_HEIGHT + FRAME_GAP_Y) + (row ? FRAME_MARGIN_TOP : 0);
+      const sx = (row > 0 ? FRAME_MARGIN_LEFT : 0) +
+                 frame * (FRAME_WIDTH + FRAME_GAP_X);
+      const sy = row * (FRAME_HEIGHT + FRAME_GAP_Y) +
+                 (row === 1 ? FRAME_MARGIN_TOP : 0);
       ctx.drawImage(droneImg, sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
                    drone.x, drone.y, drone.width, drone.height);
     }
