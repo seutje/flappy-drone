@@ -235,6 +235,9 @@
     pipes.push({ x, top: topHeight });
   }
 
+  // Draw an initial pipe on page load so obstacles appear immediately
+  addPipe(Math.min(drone.x + 400, canvas.width));
+
   function update(delta) {
     if (state === 'intro') return;
 
