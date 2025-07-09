@@ -176,10 +176,12 @@
     frameTime = 0;
   }
 
-  canvas.addEventListener('touchstart', () => {
+  function handleInput() {
     if (state !== 'playing') { start(); return; }
     drone.vy = JUMP;
-  });
+  }
+
+  canvas.addEventListener('pointerdown', handleInput);
 
   function addPipe() {
     const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
