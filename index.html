@@ -49,6 +49,7 @@
   const GAP = 140; // vertical gap between obstacles
   const PIPE_WIDTH = 60;
   const PIPE_INTERVAL = 1600; // ms
+  const PIPE_SPEED = 0.2; // px per ms
 
   // --- Audio Setup ---
   const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -191,8 +192,15 @@
   let frame = 0;
   let frameTime = 0;
 
+  let startedOnce = false;
+
   function start() {
-    pipes = [];
+    if (startedOnce) {
+      pipes = [];
+      // Repopulate pipes on restart so the first is within 400px of the drone
+      populatePipes();
+    }
+    startedOnce = true;
     drone.y = canvas.height/2;
     drone.vy = 0;
     lastPipeTime = performance.now();
@@ -228,10 +236,21 @@
 
   canvas.addEventListener('pointerdown', handleInput);
 
-  function addPipe() {
+  function addPipe(x = canvas.width) {
     const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
-    pipes.push({ x: canvas.width, top: topHeight });
+    pipes.push({ x, top: topHeight });
   }
+
+  function populatePipes() {
+    const spacing = PIPE_INTERVAL * PIPE_SPEED;
+    let x = Math.min(drone.x + 400, canvas.width);
+    for (; x < canvas.width; x += spacing) {
+      addPipe(x);
+    }
+  }
+
+  // Populate pipes on page load so obstacles appear immediately
+  populatePipes();
 
   function update(delta) {
     if (state === 'intro') return;
@@ -257,7 +276,7 @@
 
       for (let i = pipes.length - 1; i >= 0; i--) {
         const p = pipes[i];
-        p.x -= delta * 0.2; // pipe speed
+        p.x -= delta * PIPE_SPEED; // pipe speed
         if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
           if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
             reset();
