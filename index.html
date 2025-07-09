@@ -53,6 +53,7 @@
   // --- Audio Setup ---
   const AudioContext = window.AudioContext || window.webkitAudioContext;
   let audioCtx;
+  let masterGain;
   let audioStarted = false;
 
   const melodyNotes = [
@@ -68,7 +69,7 @@
     osc.frequency.setValueAtTime(freq, time);
     gain.gain.setValueAtTime(0.3, time);
     gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-    osc.connect(gain).connect(audioCtx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start(time);
     osc.stop(time + duration);
   }
@@ -81,7 +82,7 @@
     osc.frequency.exponentialRampToValueAtTime(50, time + 0.3);
     gain.gain.setValueAtTime(1, time);
     gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
-    osc.connect(gain).connect(audioCtx.destination);
+    osc.connect(gain).connect(masterGain);
     osc.start(time);
     osc.stop(time + 0.3);
   }
@@ -97,7 +98,7 @@
     noise.buffer = buffer;
     gain.gain.setValueAtTime(0.5, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
-    noise.connect(gain).connect(audioCtx.destination);
+    noise.connect(gain).connect(masterGain);
     noise.start(time);
     noise.stop(time + 0.2);
   }
@@ -116,7 +117,12 @@
 
   function startMusic() {
     if (!audioStarted) {
-      if (!audioCtx) audioCtx = new AudioContext();
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+      }
       audioCtx.resume();
       playMelody();
       audioStarted = true;
