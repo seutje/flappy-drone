@@ -73,14 +73,17 @@
     window.requestAnimationFrame(loop);
   }
 
-  function reset() {
-    running = false;
+  function drawGameOver() {
     ctx.fillStyle = '#000';
     ctx.textAlign = 'center';
     ctx.font = 'bold 32px sans-serif';
     ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 20);
     ctx.font = 'bold 24px sans-serif';
     ctx.fillText('Tap to Restart', canvas.width/2, canvas.height/2 + 20);
+  }
+
+  function reset() {
+    running = false;
   }
 
   canvas.addEventListener('touchstart', () => {
@@ -145,11 +148,14 @@
 
   let last = performance.now();
   function loop(now) {
-    if (!running) return;
     const delta = now - last;
     last = now;
     update(delta);
     draw();
+    if (!running) {
+      drawGameOver();
+      return;
+    }
     window.requestAnimationFrame(loop);
   }
 
