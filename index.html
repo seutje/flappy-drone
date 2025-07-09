@@ -46,6 +46,8 @@
 
   const GRAVITY = 0.5;
   const JUMP = -8; // reduced jump power
+  const FAST_TAP_INTERVAL = 200; // ms
+  const FAST_TAP_MULTIPLIER = 1.5;
   const GAP = 140; // vertical gap between obstacles
   const PIPE_WIDTH = 60;
   const PIPE_INTERVAL = 1600; // ms
@@ -191,6 +193,7 @@
   let state = 'intro'; // intro, playing, dead
   let frame = 0;
   let frameTime = 0;
+  let lastTapTime = 0;
 
   let startedOnce = false;
 
@@ -230,8 +233,14 @@
 
   function handleInput() {
     playTapSound();
-    if (state !== 'playing') { start(); return; }
-    drone.vy = JUMP;
+    const now = performance.now();
+    if (state !== 'playing') { lastTapTime = now; start(); return; }
+    if (now - lastTapTime < FAST_TAP_INTERVAL) {
+      drone.vy = JUMP * FAST_TAP_MULTIPLIER;
+    } else {
+      drone.vy = JUMP;
+    }
+    lastTapTime = now;
   }
 
   canvas.addEventListener('pointerdown', handleInput);
