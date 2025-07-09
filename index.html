@@ -50,6 +50,79 @@
   const PIPE_WIDTH = 60;
   const PIPE_INTERVAL = 1600; // ms
 
+  // --- Audio Setup ---
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  let audioCtx;
+  let audioStarted = false;
+
+  const melodyNotes = [
+    261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25
+  ]; // C4 to C5
+  const NOTE_DURATION = 0.3; // seconds
+  const SETS = 8;
+
+  function scheduleNote(freq, time, duration) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(freq, time);
+    gain.gain.setValueAtTime(0.3, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + duration);
+  }
+
+  function scheduleKick(time) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(50, time + 0.3);
+    gain.gain.setValueAtTime(1, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + 0.3);
+  }
+
+  function scheduleSnare(time) {
+    const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    const noise = audioCtx.createBufferSource();
+    const gain = audioCtx.createGain();
+    noise.buffer = buffer;
+    gain.gain.setValueAtTime(0.5, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+    noise.connect(gain).connect(audioCtx.destination);
+    noise.start(time);
+    noise.stop(time + 0.2);
+  }
+
+  function playMelody() {
+    const start = audioCtx.currentTime + 0.05;
+    const totalNotes = melodyNotes.length * SETS;
+    for (let i = 0; i < totalNotes; i++) {
+      const t = start + i * NOTE_DURATION;
+      scheduleNote(melodyNotes[i % melodyNotes.length], t, NOTE_DURATION * 0.9);
+      if (i % melodyNotes.length === 0) scheduleKick(t);
+      if (i % melodyNotes.length === 4) scheduleSnare(t);
+    }
+    setTimeout(playMelody, totalNotes * NOTE_DURATION * 1000);
+  }
+
+  function startMusic() {
+    if (!audioStarted) {
+      if (!audioCtx) audioCtx = new AudioContext();
+      audioCtx.resume();
+      playMelody();
+      audioStarted = true;
+    }
+  }
+
   let lastPipeTime = 0;
   let pipes = [];
   let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 80, height: 64 };
@@ -79,6 +152,7 @@
     state = 'playing';
     frame = 0;
     frameTime = 0;
+    startMusic();
   }
 
   function drawGameOver() {
