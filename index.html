@@ -35,6 +35,9 @@
 
   const droneImg = new Image();
   droneImg.src = 'assets/images/sprite-drone.png';
+  const SPRITE_SIZE = 1024; // dimensions of the sprite image
+  const PADDING_TOP = 250;  // transparent padding inside the sprite
+  const PADDING_LEFT = 125;
 
   const GRAVITY = 0.5;
   const JUMP = -8; // reduced jump power
@@ -45,6 +48,18 @@
   let lastPipeTime = 0;
   let pipes = [];
   let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 80, height: 64 };
+  function getHitbox() {
+    const scaleX = drone.width / SPRITE_SIZE;
+    const scaleY = drone.height / SPRITE_SIZE;
+    const padX = PADDING_LEFT * scaleX;
+    const padY = PADDING_TOP * scaleY;
+    return {
+      x: drone.x + padX,
+      y: drone.y + padY,
+      width: drone.width - padX,
+      height: drone.height - padY
+    };
+  }
   let score = 0;
   let running = false;
 
@@ -84,7 +99,8 @@
     drone.vy += GRAVITY;
     drone.y += drone.vy;
 
-    if (drone.y + drone.height > canvas.height || drone.y < 0) {
+    const hitbox = getHitbox();
+    if (hitbox.y + hitbox.height > canvas.height || hitbox.y < 0) {
       reset();
       return;
     }
@@ -93,8 +109,8 @@
       const p = pipes[i];
       p.x -= delta * 0.2; // pipe speed
       // collision
-      if (p.x < drone.x + drone.width && p.x + PIPE_WIDTH > drone.x) {
-        if (drone.y < p.top || drone.y + drone.height > p.top + GAP) {
+      if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
+        if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
           reset();
           return;
         }
