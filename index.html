@@ -70,10 +70,6 @@
     if (!running) { start(); return; }
     drone.vy = JUMP;
   });
-  canvas.addEventListener('mousedown', () => {
-    if (!running) { start(); return; }
-    drone.vy = JUMP;
-  });
 
   function addPipe() {
     const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
