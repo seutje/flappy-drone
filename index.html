@@ -200,6 +200,8 @@
     state = 'playing';
     frame = 0;
     frameTime = 0;
+    // Draw an initial pipe no more than 400px ahead of the drone
+    addPipe(Math.min(drone.x + 400, canvas.width));
     if (musicStartTimeout) clearTimeout(musicStartTimeout);
     musicStartTimeout = setTimeout(startMusic, 1000);
   }
@@ -228,9 +230,9 @@
 
   canvas.addEventListener('pointerdown', handleInput);
 
-  function addPipe() {
+  function addPipe(x = canvas.width) {
     const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
-    pipes.push({ x: canvas.width, top: topHeight });
+    pipes.push({ x, top: topHeight });
   }
 
   function update(delta) {
