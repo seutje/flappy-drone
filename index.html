@@ -58,10 +58,18 @@
   let musicStartTimeout;
 
   const melodyNotes = [
-    261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25
-  ]; // C4 to C5
+    261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25,
+    523.25, 493.88, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63,
+    261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25,
+    523.25, 493.88, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63,
+    261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25,
+    523.25, 493.88, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63,
+    261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25,
+    523.25, 493.88, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63
+  ]; // 64-note melody (4 ascending/descending sequences)
   const NOTE_DURATION = 0.3; // seconds
-  const SETS = 8;
+  const SETS = 1;
+  const MEASURE_LEN = 8; // kick/snare pattern length
 
   function scheduleNote(freq, time, duration) {
     const osc = audioCtx.createOscillator();
@@ -110,8 +118,8 @@
     for (let i = 0; i < totalNotes; i++) {
       const t = start + i * NOTE_DURATION;
       scheduleNote(melodyNotes[i % melodyNotes.length], t, NOTE_DURATION * 0.9);
-      if (i % melodyNotes.length === 0) scheduleKick(t);
-      if (i % melodyNotes.length === 4) scheduleSnare(t);
+      if (i % MEASURE_LEN === 0) scheduleKick(t);
+      if (i % MEASURE_LEN === 4) scheduleSnare(t);
     }
     setTimeout(playMelody, totalNotes * NOTE_DURATION * 1000);
   }
