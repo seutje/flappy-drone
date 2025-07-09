@@ -63,12 +63,84 @@
   let score = 0;
   let running = false;
 
+  // ----- Chiptune soundtrack using Web Audio API -----
+  let audioCtx = null;
+  const melody = [
+    261.63, 293.66, 329.63, 349.23,
+    392.0, 440.0, 493.88, 523.25
+  ];
+
+  function createNote(freq, time, duration) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(freq, time);
+    gain.gain.setValueAtTime(0.2, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + duration);
+  }
+
+  function createKick(time) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(150, time);
+    osc.frequency.exponentialRampToValueAtTime(0.001, time + 0.5);
+    gain.gain.setValueAtTime(1, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(time);
+    osc.stop(time + 0.5);
+  }
+
+  function createSnare(time) {
+    const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(1, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+    noise.connect(gain).connect(audioCtx.destination);
+    noise.start(time);
+    noise.stop(time + 0.2);
+  }
+
+  function startSoundtrack() {
+    if (audioCtx) {
+      audioCtx.close();
+    }
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const startT = audioCtx.currentTime + 0.1;
+    const noteLen = 0.3;
+    for (let i = 0; i < 64; i++) {
+      const freq = melody[i % melody.length];
+      const t = startT + i * noteLen;
+      createNote(freq, t, noteLen);
+      if (i % 4 === 0) createKick(t);
+      if (i % 4 === 2) createSnare(t);
+    }
+  }
+
+  function stopSoundtrack() {
+    if (audioCtx) {
+      audioCtx.close();
+      audioCtx = null;
+    }
+  }
+
   function start() {
     pipes = [];
     drone.y = canvas.height/2;
     drone.vy = 0;
     lastPipeTime = performance.now();
     score = 0;
+    startSoundtrack();
     running = true;
     window.requestAnimationFrame(loop);
   }
@@ -84,6 +156,7 @@
 
   function reset() {
     running = false;
+    stopSoundtrack();
   }
 
   canvas.addEventListener('touchstart', () => {
