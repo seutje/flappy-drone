@@ -55,6 +55,7 @@
   let audioCtx;
   let masterGain;
   let audioStarted = false;
+  let musicStartTimeout;
 
   const melodyNotes = [
     261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25
@@ -158,7 +159,8 @@
     state = 'playing';
     frame = 0;
     frameTime = 0;
-    startMusic();
+    if (musicStartTimeout) clearTimeout(musicStartTimeout);
+    musicStartTimeout = setTimeout(startMusic, 1000);
   }
 
   function drawGameOver() {
