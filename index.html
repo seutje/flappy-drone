@@ -26,9 +26,26 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
+  const CLOUD_COUNT = 8;
+  let clouds = [];
+  function initClouds() {
+    clouds = [];
+    for (let i = 0; i < CLOUD_COUNT; i++) {
+      const scale = 0.5 + Math.random() * 0.5;
+      clouds.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.5,
+        width: 60 * scale,
+        height: 40 * scale,
+        speed: 0.02 + Math.random() * 0.05
+      });
+    }
+  }
+
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    initClouds();
   }
   window.addEventListener('resize', resize);
   resize();
@@ -346,6 +363,13 @@
   populatePipes();
 
   function update(delta) {
+    clouds.forEach(c => {
+      c.x -= c.speed * delta;
+      if (c.x + c.width < 0) {
+        c.x = canvas.width;
+        c.y = Math.random() * canvas.height * 0.5;
+      }
+    });
     if (state === 'intro') return;
 
     if (state === 'playing') {
@@ -395,6 +419,13 @@
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Draw clouds
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    clouds.forEach(c => {
+      ctx.beginPath();
+      ctx.ellipse(c.x, c.y, c.width / 2, c.height / 2, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
     // Draw drone
     if (droneImg.complete) {
       const row = state === 'dead' ? 1 : 0;
