@@ -378,10 +378,10 @@
       ctx.fillRect(p.x, p.top + GAP, PIPE_WIDTH, canvas.height - p.top - GAP);
     });
     // Score
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = '#000';
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(score, 10, 30);
+    ctx.fillText(`Score: ${score}`, 10, 30);
   }
 
   let last = performance.now();
