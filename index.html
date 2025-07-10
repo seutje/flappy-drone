@@ -26,6 +26,9 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
+  const DEBUG = true; // set to false to hide FPS counter
+  let fps = 0;
+
   const CLOUD_COUNT = 8;
   let clouds = [];
   function initClouds() {
@@ -443,6 +446,12 @@
       ctx.fillRect(p.x, p.top + p.gap, PIPE_WIDTH, canvas.height - p.top - p.gap);
     });
     // Score
+    if (DEBUG) {
+      ctx.fillStyle = '#000';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${Math.round(fps)} FPS`, canvas.width / 2, 20);
+    }
     ctx.fillStyle = '#000';
     ctx.font = 'bold 24px sans-serif';
     ctx.textAlign = 'left';
@@ -465,6 +474,7 @@
       window.requestAnimationFrame(loop);
       return;
     }
+    fps = 1000 / delta;
     last = now;
     update(delta);
     draw();
