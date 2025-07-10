@@ -198,14 +198,23 @@
   function loadScores() {
     try {
       const data = JSON.parse(localStorage.getItem('highScores') || '[]');
-      return Array.isArray(data) ? data : [];
+      if (!Array.isArray(data)) return [];
+      return data
+        .map(item =>
+          typeof item === 'number'
+            ? item
+            : typeof item === 'object' && item !== null
+              ? Number(item.score)
+              : Number(item)
+        )
+        .filter(n => !isNaN(n));
     } catch (e) {
       return [];
     }
   }
 
   function saveScore(newScore) {
-    highScores.push(newScore);
+    highScores.push(Number(newScore) || 0);
     highScores.sort((a, b) => b - a);
     highScores = highScores.slice(0, 5);
     try {
