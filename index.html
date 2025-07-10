@@ -418,6 +418,9 @@
     ctx.fillText(`Score: ${score}`, 10, 30);
   }
 
+  const MAX_FPS = 60;
+  const FRAME_MIN = 1000 / MAX_FPS;
+
   let last = performance.now();
   function loop(now) {
     if (paused) {
@@ -425,7 +428,12 @@
       window.requestAnimationFrame(loop);
       return;
     }
+
     const delta = now - last;
+    if (delta < FRAME_MIN) {
+      window.requestAnimationFrame(loop);
+      return;
+    }
     last = now;
     update(delta);
     draw();
