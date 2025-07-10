@@ -321,7 +321,7 @@
 
   function addPipe(x = canvas.width) {
     const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
-    pipes.push({ x, top: topHeight });
+    pipes.push({ x, top: topHeight, scored: false });
   }
 
   function populatePipes() {
@@ -357,20 +357,23 @@
         return;
       }
 
-      for (let i = pipes.length - 1; i >= 0; i--) {
-        const p = pipes[i];
-        p.x -= delta * PIPE_SPEED; // pipe speed
-        if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
-          if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
-            reset();
-            return;
+        for (let i = pipes.length - 1; i >= 0; i--) {
+          const p = pipes[i];
+          p.x -= delta * PIPE_SPEED; // pipe speed
+          if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
+            if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
+              reset();
+              return;
+            }
+          }
+          if (!p.scored && p.x + PIPE_WIDTH < hitbox.x) {
+            score++;
+            p.scored = true;
+          }
+          if (p.x + PIPE_WIDTH < 0) {
+            pipes.splice(i, 1);
           }
         }
-        if (p.x + PIPE_WIDTH < 0) {
-          pipes.splice(i, 1);
-          score++;
-        }
-      }
     } else if (state === 'dead') {
       frameTime += delta;
       if (frameTime > ANIM_SPEED && frame < FRAMES - 1) {
