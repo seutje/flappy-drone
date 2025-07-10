@@ -26,6 +26,22 @@
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
 
+  const CLOUD_COUNT = 8;
+  let clouds = [];
+  function initClouds() {
+    clouds = [];
+    for (let i = 0; i < CLOUD_COUNT; i++) {
+      const scale = 0.5 + Math.random() * 0.5;
+      clouds.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height * 0.5,
+        width: 60 * scale,
+        height: 40 * scale,
+        speed: 0.02 + Math.random() * 0.05
+      });
+    }
+  }
+
   function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -61,22 +77,6 @@
   const PIPE_WIDTH = 60;
   const PIPE_INTERVAL = 1600; // ms
   const PIPE_SPEED = 0.2; // px per ms
-
-  const CLOUD_COUNT = 8;
-  let clouds = [];
-  function initClouds() {
-    clouds = [];
-    for (let i = 0; i < CLOUD_COUNT; i++) {
-      const scale = 0.5 + Math.random() * 0.5;
-      clouds.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height * 0.5,
-        width: 60 * scale,
-        height: 40 * scale,
-        speed: 0.02 + Math.random() * 0.05
-      });
-    }
-  }
 
   // --- Audio Setup ---
   const AudioContext = window.AudioContext || window.webkitAudioContext;
