@@ -48,7 +48,15 @@
   const JUMP = -8; // reduced jump power
   const FAST_TAP_INTERVAL = 200; // ms
   const FAST_TAP_MULTIPLIER = 1.5;
-  const GAP = 140; // vertical gap between obstacles
+  const BASE_GAP = 140; // smallest gap after difficulty ramps
+  const INITIAL_GAP_MULTIPLIER = 2;
+  const GAP_DURATION = 60000; // ms for gap to shrink to BASE_GAP
+  let gameStartTime = performance.now();
+
+  function getCurrentGap() {
+    const progress = Math.min((performance.now() - gameStartTime) / GAP_DURATION, 1);
+    return BASE_GAP * INITIAL_GAP_MULTIPLIER - (BASE_GAP * (INITIAL_GAP_MULTIPLIER - 1) * progress);
+  }
   const PIPE_WIDTH = 60;
   const PIPE_INTERVAL = 1600; // ms
   const PIPE_SPEED = 0.2; // px per ms
@@ -251,6 +259,7 @@
     }
     startedOnce = true;
     drone.y = canvas.height/2;
+    gameStartTime = performance.now();
     drone.vy = 0;
     lastPipeTime = performance.now();
     score = 0;
@@ -320,8 +329,9 @@
   });
 
   function addPipe(x = canvas.width) {
-    const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
-    pipes.push({ x, top: topHeight, scored: false });
+    const gap = getCurrentGap();
+    const topHeight = 50 + Math.random() * (canvas.height - gap - 100);
+    pipes.push({ x, top: topHeight, gap, scored: false });
   }
 
   function populatePipes() {
@@ -361,7 +371,7 @@
           const p = pipes[i];
           p.x -= delta * PIPE_SPEED; // pipe speed
           if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
-            if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + GAP) {
+            if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + p.gap) {
               reset();
               return;
             }
@@ -399,7 +409,7 @@
     ctx.fillStyle = '#3a5f0b';
     pipes.forEach(p => {
       ctx.fillRect(p.x, 0, PIPE_WIDTH, p.top);
-      ctx.fillRect(p.x, p.top + GAP, PIPE_WIDTH, canvas.height - p.top - GAP);
+      ctx.fillRect(p.x, p.top + p.gap, PIPE_WIDTH, canvas.height - p.top - p.gap);
     });
     // Score
     ctx.fillStyle = '#000';
