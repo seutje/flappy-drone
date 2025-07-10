@@ -441,10 +441,12 @@
     }
     // Draw pipes
     ctx.fillStyle = '#3a5f0b';
+    ctx.beginPath();
     pipes.forEach(p => {
-      ctx.fillRect(p.x, 0, PIPE_WIDTH, p.top);
-      ctx.fillRect(p.x, p.top + p.gap, PIPE_WIDTH, canvas.height - p.top - p.gap);
+      ctx.rect(p.x, 0, PIPE_WIDTH, p.top);
+      ctx.rect(p.x, p.top + p.gap, PIPE_WIDTH, canvas.height - p.top - p.gap);
     });
+    ctx.fill();
     // Score
     if (DEBUG) {
       ctx.fillStyle = '#000';
