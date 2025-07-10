@@ -194,6 +194,7 @@
   let frame = 0;
   let frameTime = 0;
   let lastTapTime = 0;
+  let paused = false;
 
   function loadScores() {
     try {
@@ -276,6 +277,19 @@
     });
   }
 
+  function drawIntro() {
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 48px sans-serif';
+    ctx.fillText('FLAPPY DRONE', canvas.width/2, canvas.height/2 - 40);
+    ctx.font = '24px sans-serif';
+    ctx.fillText('Tap to Start', canvas.width/2, canvas.height/2);
+    ctx.font = '16px sans-serif';
+    ctx.fillText('Tap or click to fly. Avoid obstacles.',
+                canvas.width/2,
+                canvas.height/2 + 30);
+  }
+
   function reset() {
     playDeathSound();
     recordHighScore(score);
@@ -297,6 +311,13 @@
   }
 
   canvas.addEventListener('pointerdown', handleInput);
+
+  document.addEventListener('visibilitychange', () => {
+    paused = document.hidden;
+    if (!paused) {
+      last = performance.now();
+    }
+  });
 
   function addPipe(x = canvas.width) {
     const topHeight = 50 + Math.random() * (canvas.height - GAP - 100);
@@ -386,21 +407,24 @@
 
   let last = performance.now();
   function loop(now) {
+    if (paused) {
+      last = now;
+      window.requestAnimationFrame(loop);
+      return;
+    }
     const delta = now - last;
     last = now;
     update(delta);
     draw();
     if (state === 'dead') {
       drawGameOver();
+    } else if (state === 'intro') {
+      drawIntro();
     }
     window.requestAnimationFrame(loop);
   }
 
-  // Initial splash
-  ctx.fillStyle = '#000';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('Tap to Start', canvas.width/2, canvas.height/2);
+  // Start the main loop
   window.requestAnimationFrame(loop);
 })();
 </script>
