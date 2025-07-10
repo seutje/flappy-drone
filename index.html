@@ -195,6 +195,26 @@
   let frameTime = 0;
   let lastTapTime = 0;
 
+  function loadScores() {
+    try {
+      const data = JSON.parse(localStorage.getItem('highScores') || '[]');
+      return Array.isArray(data) ? data : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveScore(newScore) {
+    highScores.push(newScore);
+    highScores.sort((a, b) => b - a);
+    highScores = highScores.slice(0, 5);
+    try {
+      localStorage.setItem('highScores', JSON.stringify(highScores));
+    } catch (e) {}
+  }
+
+  let highScores = loadScores();
+
   let startedOnce = false;
 
   function start() {
@@ -219,13 +239,19 @@
     ctx.fillStyle = '#000';
     ctx.textAlign = 'center';
     ctx.font = 'bold 32px sans-serif';
-    ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 20);
+    ctx.fillText('Game Over', canvas.width/2, canvas.height/2 - 40);
     ctx.font = 'bold 24px sans-serif';
-    ctx.fillText('Tap to Restart', canvas.width/2, canvas.height/2 + 20);
+    ctx.fillText('Tap to Restart', canvas.width/2, canvas.height/2 - 5);
+    ctx.font = 'bold 20px sans-serif';
+    ctx.fillText('High Scores', canvas.width/2, canvas.height/2 + 30);
+    highScores.forEach((s, i) => {
+      ctx.fillText(`${i + 1}. ${s}`, canvas.width/2, canvas.height/2 + 60 + i * 22);
+    });
   }
 
   function reset() {
     playDeathSound();
+    saveScore(score);
     state = 'dead';
     frame = 0;
     frameTime = 0;
