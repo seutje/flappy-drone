@@ -31,6 +31,8 @@
   const DEBUG = true; // set to false to hide FPS counter
   let fps = 0;
 
+  let PIPE_INTERVAL = isMobile ? 2000 : 1600; // ms
+
   const CLOUD_COUNT = isMobile ? 4 : 8;
   let clouds = [];
   function initClouds() {
@@ -81,7 +83,6 @@
     return BASE_GAP * INITIAL_GAP_MULTIPLIER - (BASE_GAP * (INITIAL_GAP_MULTIPLIER - 1) * progress);
   }
   const PIPE_WIDTH = 60;
-  let PIPE_INTERVAL = isMobile ? 2000 : 1600; // ms
   const PIPE_SPEED = 0.2; // px per ms
 
   // --- Audio Setup ---
