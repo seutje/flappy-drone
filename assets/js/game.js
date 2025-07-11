@@ -47,7 +47,7 @@
   const FRAME_MARGIN_LEFT = 15;
   const FRAME_MARGIN_TOP = 28;
   const FRAMES = 3;
-  const ANIM_SPEED = 120; // ms between frames
+  const ANIM_SPEED = 200; // ms between frames (slower animation)
 
   const GRAVITY = 0.5;
   const JUMP = -8; // reduced jump power
