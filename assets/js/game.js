@@ -436,6 +436,7 @@
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${Math.round(fps)} FPS`, canvas.width / 2, 20);
+      ctx.fillText(`Pipes: ${pipes.length}`, canvas.width / 2, 40);
     }
     ctx.fillStyle = '#000';
     ctx.font = 'bold 24px sans-serif';
