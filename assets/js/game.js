@@ -7,7 +7,7 @@
   const DEBUG = true; // set to false to hide FPS counter
   let fps = 0;
 
-  const PIPE_SPACING = 300; // fixed horizontal distance between pipes in pixels
+  const PIPE_SPACING = 600; // fixed horizontal distance between pipes in pixels
   const CROSS_TIME = 5000; // ms for a pipe to travel across the screen
   let PIPE_SPEED = canvas.width / CROSS_TIME; // px per ms
   let PIPE_INTERVAL = PIPE_SPACING / PIPE_SPEED; // ms
