@@ -473,6 +473,8 @@
 
     const delta = now - last;
     if (delta < FRAME_MIN) {
+      // Update timestamp even when skipping to keep FPS stable
+      last = now;
       window.requestAnimationFrame(loop);
       return;
     }
