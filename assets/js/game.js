@@ -84,6 +84,7 @@
   const NOTE_DURATION = 0.3; // seconds
   const SETS = 1;
   const MEASURE_LEN = 8; // kick/snare pattern length
+  let snareBuffer = null;
 
   function scheduleNote(freq, time, duration) {
     const osc = audioCtx.createOscillator();
@@ -111,14 +112,16 @@
   }
 
   function scheduleSnare(time) {
-    const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      data[i] = Math.random() * 2 - 1;
+    if (!snareBuffer) {
+      snareBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+      const data = snareBuffer.getChannelData(0);
+      for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
     }
     const noise = audioCtx.createBufferSource();
     const gain = audioCtx.createGain();
-    noise.buffer = buffer;
+    noise.buffer = snareBuffer;
     gain.gain.setValueAtTime(0.5, time);
     gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
     noise.connect(gain).connect(masterGain);
@@ -187,18 +190,16 @@
 
   let lastPipeTime = 0;
   let pipes = [];
-  let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 80, height: 64 };
-  function getHitbox() {
+  let drone = { x: canvas.width * 0.25, y: canvas.height/2, vy: 0, width: 80, height: 64, hitbox: { x: 0, y: 0, width: 0, height: 0 } };
+  function updateHitbox() {
     const scaleX = drone.width / FRAME_WIDTH;
     const scaleY = drone.height / FRAME_HEIGHT;
     const padX = 10 * scaleX;
     const padY = 5 * scaleY;
-    return {
-      x: drone.x + padX,
-      y: drone.y + padY,
-      width: drone.width - padX * 2,
-      height: drone.height - padY * 2
-    };
+    drone.hitbox.x = drone.x + padX;
+    drone.hitbox.y = drone.y + padY;
+    drone.hitbox.width = drone.width - padX * 2;
+    drone.hitbox.height = drone.height - padY * 2;
   }
   let score = 0;
   let state = 'intro'; // intro, playing, dead
@@ -370,9 +371,9 @@
       }
       drone.vy += GRAVITY;
       drone.y += drone.vy;
+      updateHitbox();
 
-      const hitbox = getHitbox();
-      if (hitbox.y + hitbox.height > canvas.height || hitbox.y < 0) {
+      if (drone.hitbox.y + drone.hitbox.height > canvas.height || drone.hitbox.y < 0) {
         reset();
         return;
       }
@@ -380,13 +381,13 @@
         for (let i = pipes.length - 1; i >= 0; i--) {
           const p = pipes[i];
           p.x -= delta * PIPE_SPEED; // pipe speed
-          if (p.x < hitbox.x + hitbox.width && p.x + PIPE_WIDTH > hitbox.x) {
-            if (hitbox.y < p.top || hitbox.y + hitbox.height > p.top + p.gap) {
+          if (p.x < drone.hitbox.x + drone.hitbox.width && p.x + PIPE_WIDTH > drone.hitbox.x) {
+            if (drone.hitbox.y < p.top || drone.hitbox.y + drone.hitbox.height > p.top + p.gap) {
               reset();
               return;
             }
           }
-          if (!p.scored && p.x + PIPE_WIDTH < hitbox.x) {
+          if (!p.scored && p.x + PIPE_WIDTH < drone.hitbox.x) {
             score++;
             p.scored = true;
           }
@@ -422,7 +423,6 @@
       ctx.drawImage(droneImg, sx, sy, FRAME_WIDTH, FRAME_HEIGHT,
                    drone.x, drone.y, drone.width, drone.height);
     }
-    // Draw pipes
     ctx.fillStyle = '#3a5f0b';
     ctx.beginPath();
     pipes.forEach(p => {
@@ -456,8 +456,6 @@
 
     const delta = now - last;
     if (delta < FRAME_MIN) {
-      // Update timestamp even when skipping to keep FPS stable
-      last = now;
       window.requestAnimationFrame(loop);
       return;
     }
