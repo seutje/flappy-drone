@@ -356,8 +356,11 @@
   });
 
   function addPipe(x = canvas.width) {
-    const gap = getCurrentGap();
-    const topHeight = 50 + Math.random() * (canvas.height - gap - 100);
+    let gap = getCurrentGap();
+    // Ensure gap fits on the screen even on very small displays
+    gap = Math.min(gap, canvas.height - 100);
+    const range = Math.max(canvas.height - gap - 100, 0);
+    const topHeight = 50 + Math.random() * range;
     pipes.push({ x, top: topHeight, gap, scored: false });
   }
 
